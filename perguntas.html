@@ -40,9 +40,11 @@
 
       <!-- Se NÃO, aparece o desafio -->
       <div id="area-desafio" style="display:none;">
-        <span>Equipe adversária quer desafiar?</span>
-        <button class="btn-mini" id="desafioSim">Sim</button>
-        <button class="btn-mini" id="desafioNao">Não</button>
+        <span>Equipe adversária (<strong id="nomeAdversaria"></strong>) quer desafiar?</span>
+        <div style="margin-top:10px;">
+          <button class="btn-mini" id="desafioSim">Sim</button>
+          <button class="btn-mini" id="desafioNao">Não</button>
+        </div>
       </div>
 
       <!-- Justificativa (aparece quando a resposta estiver correta e pergunta tiver peso>1) -->
@@ -74,19 +76,42 @@
   </div>
 
   <script>
-    // Corrige nome da equipe jogando e fluxo de justificativa/desafio
+    // Pontuação: base 1 ponto para resposta correta sem justificativa.
+    // Se justificar corretamente, ganha o peso total (3|4|5).
     let equipes = JSON.parse(localStorage.getItem('equipes')) || [
       { nome: "Equipe 1", pontos: 0 },
       { nome: "Equipe 2", pontos: 0 }
     ];
     let equipeIndex = 0;
     let indicePergunta = 0;
-    let perguntas = [
-      { texto: "O Sol é uma estrela.", resposta: true, peso: 3 },
-      { texto: "A água ferve a 50°C ao nível do mar.", resposta: false, peso: 4 },
-      { texto: "O Brasil é maior que a Rússia em extensão territorial.", resposta: false, peso: 5 },
-      { texto: "O português é a língua oficial do Brasil.", resposta: true, peso: 3 }
-    ];
+    let desafioChallenger = null;
+    let basePointGiven = false;
+
+   let perguntas = [
+  // Peso 3 (par 1)
+  { texto: "O vírus HIV é transmitido somente através de relações sexuais desprotegidas.", resposta: false, peso: 3 },
+  { texto: "O HPV infecta apenas a pele da região genital.", resposta: false, peso: 3 },
+
+  // Peso 4 (par 1)
+  { texto: "As ISTs que causam úlceras ou inflamação genital podem facilitar a transmissão e a aquisição do HIV.", resposta: true, peso: 4 },
+  { texto: "A sífilis não tratada pode evoluir para a Neurossífilis, afetando o sistema nervoso e causando danos cerebrais ou na medula espinhal.", resposta: true, peso: 4 },
+
+  // Peso 5 (par 1)
+  { texto: "O uso consistente de preservativos elimina completamente o risco de contrair qualquer IST.", resposta: false, peso: 5 },
+  { texto: "O consentimento é um acordo 'sim ou não' que é dado no início da relação sexual e vale para todo o ato, não podendo ser retirado depois de iniciado.", resposta: false, peso: 5 },
+
+  // Peso 3 (par 2)
+  { texto: "O cancro mole e a sífilis primária são facilmente diferenciados porque o cancro da sífilis (duro) é indolor, e o cancro mole é doloroso.", resposta: true, peso: 3 },
+  { texto: "O uso de lubrificantes à base de óleo, como vaselina ou óleos corporais, é recomendado em conjunto com preservativos de látex para evitar o atrito e o rompimento.", resposta: false, peso: 3 },
+
+  // Peso 4 (par 2)
+  { texto: "A clamídia é frequentemente assintomática, especialmente em mulheres, sendo essa a principal razão para a sua rápida disseminação e a progressão para complicações.", resposta: true, peso: 4 },
+  { texto: "É comum que a Gonorreia e a Clamídia ocorram como coinfecção, exigindo tratamento para ambas as bactérias simultaneamente.", resposta: true, peso: 4 },
+
+  // Peso 5 (par 2)
+  { texto: "Uma pessoa com HIV que está em tratamento antirretroviral e tem a carga viral indetectável ainda pode transmitir o vírus sexualmente.", resposta: false, peso: 5 },
+  { texto: "A vacinação contra o HPV deve ser realizada após o início da atividade sexual para garantir que o organismo possa criar anticorpos contra o vírus.", resposta: false, peso: 5 }
+];
 
     const nomeEquipeAtualEl = document.getElementById("nomeEquipeAtual");
     const placarTextEl = document.getElementById("placarText");
@@ -98,10 +123,14 @@
     const resultadoRespostaEl = document.getElementById("resultadoResposta");
     const areaJustificativa = document.getElementById("areaJustificativa");
     const areaDesafio = document.getElementById("area-desafio");
+    const nomeAdversariaEl = document.getElementById("nomeAdversaria");
     const justificativaSim = document.getElementById("justificativaSim");
     const justificativaNao = document.getElementById("justificativaNao");
     const desafioSim = document.getElementById("desafioSim");
     const desafioNao = document.getElementById("desafioNao");
+    const controlesModerador = document.getElementById("controlesModerador");
+    const justOk = document.getElementById("justOk");
+    const justBad = document.getElementById("justBad");
     const proximaBtn = document.getElementById("proxima");
     const placarFinal = document.getElementById("placarFinal");
     const listaFinal = document.getElementById("listaFinal");
@@ -121,9 +150,12 @@
       feedbackEl.style.display = "none";
       areaJustificativa.style.display = "none";
       areaDesafio.style.display = "none";
+      controlesModerador.style.display = "none";
       proximaBtn.style.display = "none";
       btnVerdadeiro.disabled = false;
       btnFalso.disabled = false;
+      basePointGiven = false;
+      desafioChallenger = null;
 
       if (indicePergunta >= perguntas.length) {
         perguntaTextoEl.textContent = "Fim do jogo!";
@@ -146,53 +178,101 @@
     function handleResposta(chute) {
       btnVerdadeiro.disabled = true;
       btnFalso.disabled = true;
-      let acertou = chute === perguntas[indicePergunta].resposta;
+      const acertou = chute === perguntas[indicePergunta].resposta;
       resultadoRespostaEl.textContent = acertou ? "Acertou!" : "Errou!";
       feedbackEl.style.display = "block";
-      areaJustificativa.style.display = "block";
-      areaJustificativa.dataset.acertou = acertou ? "1" : "0";
+
+      if (acertou) {
+        // time atual acertou -> professor verifica justificativa
+        areaJustificativa.style.display = "block";
+        areaJustificativa.dataset.acertou = "1";
+      } else {
+        // time atual errou -> pergunta imediatamente se a equipe adversária quer desafiar
+        areaJustificativa.style.display = "none";
+        areaJustificativa.dataset.acertou = "0";
+        nomeAdversariaEl.textContent = equipes[1 - equipeIndex].nome;
+        areaDesafio.style.display = "block";
+      }
     }
 
+    // Professor confirma que a justificativa do time atual estava correta:
     justificativaSim.addEventListener('click', function() {
-      // Se justificou certo, ganha ponto e vai para próxima pergunta
+      const peso = perguntas[indicePergunta].peso || 1;
+      // ganha o peso total
+      equipes[equipeIndex].pontos += peso;
+      atualizarPlacarDOM();
+      areaJustificativa.style.display = "none";
+      feedbackEl.style.display = "none";
+      indicePergunta++;
+      proximaEquipe();
+      mostrarPergunta();
+    });
+
+    // Professor indica que a justificativa está incorreta:
+    justificativaNao.addEventListener('click', function() {
+      // concede o ponto base (resposta correta sem justificativa)
       equipes[equipeIndex].pontos += 1;
       atualizarPlacarDOM();
       areaJustificativa.style.display = "none";
-      feedbackEl.style.display = "none";
-      indicePergunta++; // AVANÇA A PERGUNTA
-      proximaEquipe();
-      mostrarPergunta();
-    });
-
-    justificativaNao.addEventListener('click', function() {
-      // Se justificou errado, aparece área de desafio
-      areaJustificativa.style.display = "none";
+      // pergunta se a equipe adversária quer desafiar
+      nomeAdversariaEl.textContent = equipes[1 - equipeIndex].nome;
       areaDesafio.style.display = "block";
+      basePointGiven = true;
     });
 
+    // Adversária decide desafiar:
     desafioSim.addEventListener('click', function() {
-      // Se desafiar, equipe adversária ganha ponto e vai para próxima pergunta
-      equipes[1 - equipeIndex].pontos += 1;
-      atualizarPlacarDOM();
       areaDesafio.style.display = "none";
-      feedbackEl.style.display = "none";
-      indicePergunta++; // AVANÇA A PERGUNTA
-      proximaEquipe();
-      mostrarPergunta();
+      // mostra controles do moderador para validar justificativa do desafiante
+      controlesModerador.style.display = "block";
+      desafioChallenger = 1 - equipeIndex;
     });
 
+    // Adversária não desafia => segue para próxima
     desafioNao.addEventListener('click', function() {
-      // Se não desafiar, só passa para próxima pergunta
       areaDesafio.style.display = "none";
       feedbackEl.style.display = "none";
-      indicePergunta++; // AVANÇA A PERGUNTA
+      // se respostas erradas não dão ponto, só avançamos; se era justificativa incorreta, o time já recebeu 1 ponto
+      indicePergunta++;
       proximaEquipe();
       mostrarPergunta();
     });
 
-    function proximaEquipe() {
-      equipeIndex = 1 - equipeIndex;
-    }
+    // Moderador marca justificativa do desafiante como correta:
+    justOk.addEventListener('click', function() {
+      if (desafioChallenger === null) return;
+      const peso = perguntas[indicePergunta].peso || 1;
+      // remove o ponto base do time original se já foi dado
+      if (basePointGiven) {
+        equipes[equipeIndex].pontos = Math.max(0, equipes[equipeIndex].pontos - 1);
+        basePointGiven = false;
+      }
+      // desafiante ganha o peso total
+      equipes[desafioChallenger].pontos += peso;
+      atualizarPlacarDOM();
+      controlesModerador.style.display = "none";
+      feedbackEl.style.display = "none";
+      indicePergunta++;
+      proximaEquipe();
+      mostrarPergunta();
+    });
+
+    // Moderador marca justificativa do desafiante como incorreta:
+    justBad.addEventListener('click', function() {
+      // desafiante falhou -> mantém o ponto base do time original (se já dado) e segue
+      controlesModerador.style.display = "none";
+      feedbackEl.style.display = "none";
+      indicePergunta++;
+      proximaEquipe();
+      mostrarPergunta();
+    });
+
+    // Botões de avanço e reinício
+    proximaBtn.addEventListener('click', function() {
+      indicePergunta++;
+      proximaEquipe();
+      mostrarPergunta();
+    });
 
     reiniciarBtn.addEventListener('click', function() {
       location.reload();
@@ -200,6 +280,10 @@
 
     btnVerdadeiro.addEventListener('click', function() { handleResposta(true); });
     btnFalso.addEventListener('click', function() { handleResposta(false); });
+
+    function proximaEquipe() {
+      equipeIndex = 1 - equipeIndex;
+    }
 
     // Inicialização
     mostrarPergunta();
