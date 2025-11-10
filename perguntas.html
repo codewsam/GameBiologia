@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Perguntas - Jogo Verdadeiro ou Falso</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="p-4">
+
+  <div class="equipes-container mx-auto" style="max-width:900px;">
+    <div class="equipe-atual" id="equipeAtualBox">
+      <h3>Vez de: <span id="nomeEquipeAtual">-</span></h3>
+    </div>
+
+    <div id="placar" class="mb-3" style="text-align:center;">
+      <strong>Placar:</strong> <span id="placarText">Equipe 1: 0 — Equipe 2: 0</span>
+    </div>
+
+    <div class="pergunta-container" id="perguntaContainer">
+      <h2 id="perguntaTexto">Carregando...</h2>
+      <p>Peso: <span id="pesoPergunta">-</span></p>
+
+      <div class="botoes">
+        <button type="button" id="btnVerdadeiro" class="btn-resposta">Verdadeiro</button>
+        <button type="button" id="btnFalso" class="btn-resposta">Falso</button>
+      </div>
+
+      <div id="feedback" class="feedback" style="display:none;">
+        <p id="resultadoResposta"></p>
+      </div>
+
+      <!-- Professor valida a opção -->
+      <div id="areaJustificativa" style="display:none;">
+        <p>Justificou certo?</p>
+        <button class="btn-mini" id="justificativaSim">Sim</button>
+        <button class="btn-mini" id="justificativaNao">Não</button>
+      </div>
+
+      <!-- Se NÃO, aparece o desafio -->
+      <div id="area-desafio" style="display:none;">
+        <span>Equipe adversária quer desafiar?</span>
+        <button class="btn-mini" id="desafioSim">Sim</button>
+        <button class="btn-mini" id="desafioNao">Não</button>
+      </div>
+
+      <!-- Justificativa (aparece quando a resposta estiver correta e pergunta tiver peso>1) -->
+      <div id="areaJustificativaTexto" style="display:none; margin-top:20px;">
+        <label for="justificativa">Enviar justificativa (moderador irá validar):</label>
+        <textarea id="justificativa" rows="4" style="width:100%; border-radius:10px; padding:8px;"></textarea>
+        <div style="text-align:center; margin-top:10px;">
+          <button id="enviarJust" class="btn-continuar">Enviar justificativa</button>
+        </div>
+      </div>
+
+      <!-- Controles do moderador para validar justificativa -->
+      <div id="controlesModerador" style="display:none; margin-top:15px; text-align:center;">
+        <p><small>Moderador: marque a justificativa</small></p>
+        <button id="justOk" class="btn-mini">Justificativa correta</button>
+        <button id="justBad" class="btn-mini">Justificativa incorreta</button>
+      </div>
+
+      <div style="text-align:center; margin-top:20px;">
+        <button id="proxima" class="btn-continuar" style="display:none;">Próxima pergunta</button>
+      </div>
+    </div>
+
+    <div id="placarFinal" style="display:none; margin-top:25px;">
+      <h3>Placar Final</h3>
+      <ul id="listaFinal"></ul>
+      <button id="reiniciar" class="btn-continuar">Reiniciar jogo</button>
+    </div>
+  </div>
+
+  <script>
+    // Corrige nome da equipe jogando e fluxo de justificativa/desafio
+    let equipes = JSON.parse(localStorage.getItem('equipes')) || [
+      { nome: "Equipe 1", pontos: 0 },
+      { nome: "Equipe 2", pontos: 0 }
+    ];
+    let equipeIndex = 0;
+    let indicePergunta = 0;
+    let perguntas = [
+      { texto: "O Sol é uma estrela.", resposta: true, peso: 3 },
+      { texto: "A água ferve a 50°C ao nível do mar.", resposta: false, peso: 4 },
+      { texto: "O Brasil é maior que a Rússia em extensão territorial.", resposta: false, peso: 5 },
+      { texto: "O português é a língua oficial do Brasil.", resposta: true, peso: 3 }
+    ];
+
+    const nomeEquipeAtualEl = document.getElementById("nomeEquipeAtual");
+    const placarTextEl = document.getElementById("placarText");
+    const perguntaTextoEl = document.getElementById("perguntaTexto");
+    const pesoPerguntaEl = document.getElementById("pesoPergunta");
+    const btnVerdadeiro = document.getElementById("btnVerdadeiro");
+    const btnFalso = document.getElementById("btnFalso");
+    const feedbackEl = document.getElementById("feedback");
+    const resultadoRespostaEl = document.getElementById("resultadoResposta");
+    const areaJustificativa = document.getElementById("areaJustificativa");
+    const areaDesafio = document.getElementById("area-desafio");
+    const justificativaSim = document.getElementById("justificativaSim");
+    const justificativaNao = document.getElementById("justificativaNao");
+    const desafioSim = document.getElementById("desafioSim");
+    const desafioNao = document.getElementById("desafioNao");
+    const proximaBtn = document.getElementById("proxima");
+    const placarFinal = document.getElementById("placarFinal");
+    const listaFinal = document.getElementById("listaFinal");
+    const reiniciarBtn = document.getElementById("reiniciar");
+
+    function atualizarPlacarDOM() {
+      placarTextEl.textContent = `${equipes[0].nome}: ${equipes[0].pontos} — ${equipes[1].nome}: ${equipes[1].pontos}`;
+    }
+
+    function atualizarEquipeAtualDOM() {
+      nomeEquipeAtualEl.textContent = equipes[equipeIndex].nome;
+    }
+
+    function mostrarPergunta() {
+      atualizarEquipeAtualDOM();
+      atualizarPlacarDOM();
+      feedbackEl.style.display = "none";
+      areaJustificativa.style.display = "none";
+      areaDesafio.style.display = "none";
+      proximaBtn.style.display = "none";
+      btnVerdadeiro.disabled = false;
+      btnFalso.disabled = false;
+
+      if (indicePergunta >= perguntas.length) {
+        perguntaTextoEl.textContent = "Fim do jogo!";
+        pesoPerguntaEl.textContent = "-";
+        document.querySelector(".botoes").style.display = "none";
+        placarFinal.style.display = "block";
+        listaFinal.innerHTML = "";
+        equipes.forEach(e => {
+          const li = document.createElement("li");
+          li.textContent = `${e.nome}: ${e.pontos} pontos`;
+          listaFinal.appendChild(li);
+        });
+        return;
+      }
+      perguntaTextoEl.textContent = perguntas[indicePergunta].texto;
+      pesoPerguntaEl.textContent = perguntas[indicePergunta].peso;
+      document.querySelector(".botoes").style.display = "block";
+    }
+
+    function handleResposta(chute) {
+      btnVerdadeiro.disabled = true;
+      btnFalso.disabled = true;
+      let acertou = chute === perguntas[indicePergunta].resposta;
+      resultadoRespostaEl.textContent = acertou ? "Acertou!" : "Errou!";
+      feedbackEl.style.display = "block";
+      areaJustificativa.style.display = "block";
+      areaJustificativa.dataset.acertou = acertou ? "1" : "0";
+    }
+
+    justificativaSim.addEventListener('click', function() {
+      // Se justificou certo, ganha ponto e vai para próxima pergunta
+      equipes[equipeIndex].pontos += 1;
+      atualizarPlacarDOM();
+      areaJustificativa.style.display = "none";
+      feedbackEl.style.display = "none";
+      indicePergunta++; // AVANÇA A PERGUNTA
+      proximaEquipe();
+      mostrarPergunta();
+    });
+
+    justificativaNao.addEventListener('click', function() {
+      // Se justificou errado, aparece área de desafio
+      areaJustificativa.style.display = "none";
+      areaDesafio.style.display = "block";
+    });
+
+    desafioSim.addEventListener('click', function() {
+      // Se desafiar, equipe adversária ganha ponto e vai para próxima pergunta
+      equipes[1 - equipeIndex].pontos += 1;
+      atualizarPlacarDOM();
+      areaDesafio.style.display = "none";
+      feedbackEl.style.display = "none";
+      indicePergunta++; // AVANÇA A PERGUNTA
+      proximaEquipe();
+      mostrarPergunta();
+    });
+
+    desafioNao.addEventListener('click', function() {
+      // Se não desafiar, só passa para próxima pergunta
+      areaDesafio.style.display = "none";
+      feedbackEl.style.display = "none";
+      indicePergunta++; // AVANÇA A PERGUNTA
+      proximaEquipe();
+      mostrarPergunta();
+    });
+
+    function proximaEquipe() {
+      equipeIndex = 1 - equipeIndex;
+    }
+
+    reiniciarBtn.addEventListener('click', function() {
+      location.reload();
+    });
+
+    btnVerdadeiro.addEventListener('click', function() { handleResposta(true); });
+    btnFalso.addEventListener('click', function() { handleResposta(false); });
+
+    // Inicialização
+    mostrarPergunta();
+  </script>
+</body>
+</html>

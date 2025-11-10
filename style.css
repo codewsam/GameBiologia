@@ -1,0 +1,242 @@
+/* ====== Estilos gerais ====== */
+body {
+  background: linear-gradient(135deg, #f5b7d1 0%, #f8c8dc 100%);
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+h1 {
+  background-color: white;
+  color: #ef5897;
+  font-size: 3.5rem;
+  font-weight: bold;
+  border-radius: 50px;
+  padding: 20px 60px;
+  text-align: center;
+  box-shadow: 0 6px 24px rgba(239,88,151,0.12);
+  margin-bottom: 30px;
+}
+
+/* ====== Botões ====== */
+.btn-start, .btn-continuar, .btn-resposta, .btn-mini {
+  font-family: inherit;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 32px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 8px;
+}
+
+.btn-start {
+  background: linear-gradient(135deg, #fff 60%, #ef5897 100%);
+  color: #ef5897;
+  border: 2px solid #f8c8dc;
+}
+
+.btn-start:hover {
+  background: linear-gradient(135deg, #ef5897 0%, #fff 100%);
+  color: #fff;
+  border-color: #ef5897;
+}
+
+.btn-continuar {
+  background: linear-gradient(135deg, #f78ab0, #ef5897);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(239,88,151,0.15);
+}
+
+.btn-continuar:hover {
+  background: linear-gradient(135deg, #ef5897, #f78ab0);
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(239,88,151,0.18);
+}
+
+.btn-resposta {
+  background: linear-gradient(135deg, #fff 60%, #ef5897 100%);
+  color: #ef5897;
+  border: 2px solid #ef5897;
+  min-width: 120px;
+}
+
+.btn-resposta:hover {
+  background: linear-gradient(135deg, #ef5897 0%, #fff 100%);
+  color: #fff;
+  border-color: #ef5897;
+}
+
+.btn-mini {
+  background: #fff;
+  color: #ef5897;
+  border: 1px solid #ef5897;
+  padding: 8px 18px;
+  font-size: 1rem;
+  margin: 4px;
+}
+
+.btn-mini:hover {
+  background: #ef5897;
+  color: #fff;
+}
+
+/* ====== Caixa das regras ====== */
+.regras-container {
+  background-color: white;
+  padding: 60px;
+  border-radius: 20px;
+  width: 60%;
+  max-width: 600px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  text-align: center;
+}
+
+.regras-container h2 {
+  color: #ed5594;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.regras-container ul {
+  list-style: none;
+  padding: 0;
+}
+
+.regras-container li {
+  color: #e3518e;
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+
+/* ====== Caixa das equipes ====== */
+.equipes-container {
+  background-color: white;
+  padding: 40px 32px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 6px 24px rgba(239,88,151,0.10);
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.equipes-container h2 {
+  color: #ef5897;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.input-equipe {
+  border: 2px solid #ef5897;
+  border-radius: 30px;
+  padding: 10px 15px;
+  width: 80%;
+  max-width: 350px;
+  margin: 10px auto;
+  display: block;
+  font-size: 1rem;
+  color: #ef5897;
+  background: #f8c8dc;
+  transition: border 0.2s;
+}
+
+.input-equipe:focus {
+  border-color: #ed5594;
+  outline: none;
+}
+
+/* ====== Pergunta ====== */
+.pergunta-container {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(239,88,151,0.08);
+  padding: 32px 24px;
+  margin-bottom: 24px;
+}
+
+.equipe-atual {
+  background: linear-gradient(90deg, #f8c8dc 0%, #fff 100%);
+  padding: 15px 30px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(239,88,151,0.10);
+}
+
+.equipe-atual h3 {
+  color: #ef5897;
+  margin: 0;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+#placar {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(239,88,151,0.07);
+  padding: 12px 0;
+  margin-bottom: 18px;
+  font-size: 1.2rem;
+  color: #ef5897;
+}
+
+/* ====== Feedback ====== */
+.feedback {
+  background: #f8c8dc;
+  border-radius: 16px;
+  padding: 18px 24px;
+  margin-top: 18px;
+  color: #ef5897;
+  font-size: 1.15rem;
+  box-shadow: 0 2px 8px rgba(239,88,151,0.07);
+  text-align: center;
+}
+
+/* ====== Justificativa e desafio ====== */
+#areaJustificativa, #controlesModerador, #area-desafio, #justificativa-desafio {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(239,88,151,0.07);
+  padding: 18px 24px;
+  margin-top: 18px;
+  color: #ef5897;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+#justificativa {
+  border: 2px solid #ef5897;
+  border-radius: 10px;
+  padding: 8px;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 1rem;
+  background: #f8c8dc;
+  color: #ef5897;
+}
+
+#placarFinal {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(239,88,151,0.10);
+  padding: 32px 24px;
+  margin-top: 25px;
+  text-align: center;
+}
+
+#placarFinal h3 {
+  color: #ef5897;
+  margin-bottom: 18px;
+}
+
+#listaFinal li {
+  color: #ed5594;
+  font-size: 1.15rem;
+  margin: 8px 0;
+  font-weight: bold;
+}
