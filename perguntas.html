@@ -76,42 +76,59 @@
   </div>
 
   <script>
-    // Pontuação: base 1 ponto para resposta correta sem justificativa.
-    // Se justificar corretamente, ganha o peso total (3|4|5).
-    let equipes = JSON.parse(localStorage.getItem('equipes')) || [
+    // Pontuação: base 1 ponto imediato para resposta correta.
+    // Se justificar corretamente, ganha os pontos extras (peso - 1).
+    // Se desafiante for validado, ganha apenas os pontos extras (peso - 1);
+    // se o time original já tinha recebido o ponto base, esse ponto é removido.
+    // substitua a inicialização de 'equipes' por carregar do localStorage (ou usar default)
+    let equipes = [
       { nome: "Equipe 1", pontos: 0 },
       { nome: "Equipe 2", pontos: 0 }
     ];
+
+    function salvarEquipes() {
+      localStorage.setItem('equipes', JSON.stringify(equipes));
+    }
+
+    function carregarEquipes() {
+      const s = localStorage.getItem('equipes');
+      if (s) equipes = JSON.parse(s);
+    }
+
+    carregarEquipes(); // carrega placar salvo ao iniciar
+
     let equipeIndex = 0;
     let indicePergunta = 0;
     let desafioChallenger = null;
     let basePointGiven = false;
+    let basePointOwner = null;
+    let currentResponder = 0;
 
-   let perguntas = [
-  // Peso 3 (par 1)
-  { texto: "O vírus HIV é transmitido somente através de relações sexuais desprotegidas.", resposta: false, peso: 3 },
-  { texto: "O HPV infecta apenas a pele da região genital.", resposta: false, peso: 3 },
+    const perguntas = [
+      // Peso 3 (par 1)
+      { texto: "O vírus HIV é transmitido somente através de relações sexuais desprotegidas.", resposta: false, peso: 3 },
+      { texto: "O HPV infecta apenas a pele da região genital.", resposta: false, peso: 3 },
 
-  // Peso 4 (par 1)
-  { texto: "As ISTs que causam úlceras ou inflamação genital podem facilitar a transmissão e a aquisição do HIV.", resposta: true, peso: 4 },
-  { texto: "A sífilis não tratada pode evoluir para a Neurossífilis, afetando o sistema nervoso e causando danos cerebrais ou na medula espinhal.", resposta: true, peso: 4 },
+      // Peso 4 (par 1)
+      { texto: "As ISTs que causam úlceras ou inflamação genital podem facilitar a transmissão e a aquisição do HIV.", resposta: true, peso: 4 },
+      { texto: "A sífilis não tratada pode evoluir para a Neurossífilis, afetando o sistema nervoso e causando danos cerebrais ou na medula espinhal.", resposta: true, peso: 4 },
 
-  // Peso 5 (par 1)
-  { texto: "O uso consistente de preservativos elimina completamente o risco de contrair qualquer IST.", resposta: false, peso: 5 },
-  { texto: "O consentimento é um acordo 'sim ou não' que é dado no início da relação sexual e vale para todo o ato, não podendo ser retirado depois de iniciado.", resposta: false, peso: 5 },
+      // Peso 5 (par 1)
+      { texto: "O uso consistente de preservativos elimina completamente o risco de contrair qualquer IST.", resposta: false, peso: 5 },
+      { texto: "O consentimento é um acordo 'sim ou não' que é dado no início da relação sexual e vale para todo o ato, não podendo ser retirado depois de iniciado (peso 5)", resposta: false, peso: 5 },
 
-  // Peso 3 (par 2)
-  { texto: "O cancro mole e a sífilis primária são facilmente diferenciados porque o cancro da sífilis (duro) é indolor, e o cancro mole é doloroso.", resposta: true, peso: 3 },
-  { texto: "O uso de lubrificantes à base de óleo, como vaselina ou óleos corporais, é recomendado em conjunto com preservativos de látex para evitar o atrito e o rompimento.", resposta: false, peso: 3 },
+      // Peso 3 (par 2)
+      { texto: "O cancro mole e a sífilis primária são facilmente diferenciados porque o cancro da sífilis (duro) é indolor, e o cancro mole é doloroso.", resposta: true, peso: 3 },
+      { texto: "O uso de lubrificantes à base de óleo, como vaselina ou óleos corporais, é recomendado em conjunto com preservativos de látex para evitar o atrito e o rompimento.", resposta: false, peso: 3 },
 
-  // Peso 4 (par 2)
-  { texto: "A clamídia é frequentemente assintomática, especialmente em mulheres, sendo essa a principal razão para a sua rápida disseminação e a progressão para complicações.", resposta: true, peso: 4 },
-  { texto: "É comum que a Gonorreia e a Clamídia ocorram como coinfecção, exigindo tratamento para ambas as bactérias simultaneamente.", resposta: true, peso: 4 },
+      // Peso 4 (par 2)
+      { texto: "A clamídia é frequentemente assintomática, especialmente em mulheres, sendo essa a principal razão para a sua rápida disseminação e a progressão para complicações.", resposta: true, peso: 4 },
+      { texto: "É comum que a Gonorreia e a Clamídia ocorram como coinfecção, exigindo tratamento para ambas as bactérias simultaneamente.", resposta: true, peso: 4 },
 
-  // Peso 5 (par 2)
-  { texto: "Uma pessoa com HIV que está em tratamento antirretroviral e tem a carga viral indetectável ainda pode transmitir o vírus sexualmente.", resposta: false, peso: 5 },
-  { texto: "A vacinação contra o HPV deve ser realizada após o início da atividade sexual para garantir que o organismo possa criar anticorpos contra o vírus.", resposta: false, peso: 5 }
-];
+      // Peso 5 (par 2)
+      { texto: "Uma pessoa com HIV que está em tratamento antirretroviral e tem a carga viral indetectável ainda pode transmitir o vírus sexualmente.", resposta: false, peso: 5 },
+      { texto: "A vacinação contra o HPV deve ser realizada após o início da atividade sexual para garantir que o organismo possa criar anticorpos contra o vírus.", resposta: false, peso: 5 }
+    ];
 
     const nomeEquipeAtualEl = document.getElementById("nomeEquipeAtual");
     const placarTextEl = document.getElementById("placarText");
@@ -145,6 +162,13 @@
     }
 
     function mostrarPergunta() {
+      // define claramente quem responde esta pergunta antes de qualquer alteração de índices
+      currentResponder = equipeIndex;
+      // reset estado específico da pergunta
+      basePointGiven = false;
+      basePointOwner = null;
+      desafioChallenger = null;
+
       atualizarEquipeAtualDOM();
       atualizarPlacarDOM();
       feedbackEl.style.display = "none";
@@ -154,8 +178,6 @@
       proximaBtn.style.display = "none";
       btnVerdadeiro.disabled = false;
       btnFalso.disabled = false;
-      basePointGiven = false;
-      desafioChallenger = null;
 
       if (indicePergunta >= perguntas.length) {
         perguntaTextoEl.textContent = "Fim do jogo!";
@@ -178,29 +200,40 @@
     function handleResposta(chute) {
       btnVerdadeiro.disabled = true;
       btnFalso.disabled = true;
+      const peso = perguntas[indicePergunta].peso || 1;
       const acertou = chute === perguntas[indicePergunta].resposta;
       resultadoRespostaEl.textContent = acertou ? "Acertou!" : "Errou!";
       feedbackEl.style.display = "block";
 
       if (acertou) {
-        // time atual acertou -> professor verifica justificativa
+        if (!basePointGiven) {
+          equipes[currentResponder].pontos += 1;
+          basePointGiven = true;
+          basePointOwner = currentResponder;
+          atualizarPlacarDOM();
+          salvarEquipes(); // grava ponto base
+        }
+        // pergunta ao professor se justificou certo (para ganhar o restante)
         areaJustificativa.style.display = "block";
         areaJustificativa.dataset.acertou = "1";
       } else {
-        // time atual errou -> pergunta imediatamente se a equipe adversária quer desafiar
+        // time errou -> pergunta imediatamente se a equipe adversária quer desafiar
         areaJustificativa.style.display = "none";
         areaJustificativa.dataset.acertou = "0";
-        nomeAdversariaEl.textContent = equipes[1 - equipeIndex].nome;
+        nomeAdversariaEl.textContent = equipes[1 - currentResponder].nome;
         areaDesafio.style.display = "block";
       }
     }
 
-    // Professor confirma que a justificativa do time atual estava correta:
+    // professor: justificativa do time atual está correta -> concede os pontos extras
     justificativaSim.addEventListener('click', function() {
       const peso = perguntas[indicePergunta].peso || 1;
-      // ganha o peso total
-      equipes[equipeIndex].pontos += peso;
+      const extra = Math.max(0, peso - 1);
+      if (extra > 0) {
+        equipes[currentResponder].pontos += extra;
+      }
       atualizarPlacarDOM();
+      salvarEquipes(); // grava soma final (base + extras)
       areaJustificativa.style.display = "none";
       feedbackEl.style.display = "none";
       indicePergunta++;
@@ -208,48 +241,44 @@
       mostrarPergunta();
     });
 
-    // Professor indica que a justificativa está incorreta:
+    // professor: justificativa incorreta -> mantém 1 ponto base (se já dado) e abre possibilidade de desafio
     justificativaNao.addEventListener('click', function() {
-      // concede o ponto base (resposta correta sem justificativa)
-      equipes[equipeIndex].pontos += 1;
-      atualizarPlacarDOM();
+      // se o base point ainda não foi dado (teoricamente não acontece aqui), não dá nada
+      nomeAdversariaEl.textContent = equipes[1 - currentResponder].nome;
       areaJustificativa.style.display = "none";
-      // pergunta se a equipe adversária quer desafiar
-      nomeAdversariaEl.textContent = equipes[1 - equipeIndex].nome;
       areaDesafio.style.display = "block";
-      basePointGiven = true;
+      // basePointGiven/basePointOwner permanecem como estão
     });
 
-    // Adversária decide desafiar:
+    // adversária decide desafiar -> mostra controles do moderador para validar justificativa do desafiante
     desafioSim.addEventListener('click', function() {
       areaDesafio.style.display = "none";
-      // mostra controles do moderador para validar justificativa do desafiante
       controlesModerador.style.display = "block";
-      desafioChallenger = 1 - equipeIndex;
+      desafioChallenger = 1 - currentResponder;
     });
 
-    // Adversária não desafia => segue para próxima
+    // adversária não desafia -> segue para próxima (currentResponder já ficou com seu ponto base se tinha)
     desafioNao.addEventListener('click', function() {
       areaDesafio.style.display = "none";
       feedbackEl.style.display = "none";
-      // se respostas erradas não dão ponto, só avançamos; se era justificativa incorreta, o time já recebeu 1 ponto
       indicePergunta++;
       proximaEquipe();
       mostrarPergunta();
     });
 
-    // Moderador marca justificativa do desafiante como correta:
+    // moderador: justificativa do desafiante correta -> desafiante ganha somente os pontos extras
     justOk.addEventListener('click', function() {
       if (desafioChallenger === null) return;
       const peso = perguntas[indicePergunta].peso || 1;
-      // remove o ponto base do time original se já foi dado
-      if (basePointGiven) {
-        equipes[equipeIndex].pontos = Math.max(0, equipes[equipeIndex].pontos - 1);
-        basePointGiven = false;
+      const extra = Math.max(0, peso - 1);
+
+      // NÃO remover mais o ponto base do respondente original — mantém pontos já computados
+      // desafiante ganha apenas os pontos extras
+      if (extra > 0) {
+        equipes[desafioChallenger].pontos += extra;
       }
-      // desafiante ganha o peso total
-      equipes[desafioChallenger].pontos += peso;
       atualizarPlacarDOM();
+      salvarEquipes(); // grava alterações após desafio
       controlesModerador.style.display = "none";
       feedbackEl.style.display = "none";
       indicePergunta++;
@@ -257,9 +286,8 @@
       mostrarPergunta();
     });
 
-    // Moderador marca justificativa do desafiante como incorreta:
+    // moderador: justificativa do desafiante incorreta -> segue sem mudanças (original mantém base se tinha)
     justBad.addEventListener('click', function() {
-      // desafiante falhou -> mantém o ponto base do time original (se já dado) e segue
       controlesModerador.style.display = "none";
       feedbackEl.style.display = "none";
       indicePergunta++;
@@ -267,7 +295,6 @@
       mostrarPergunta();
     });
 
-    // Botões de avanço e reinício
     proximaBtn.addEventListener('click', function() {
       indicePergunta++;
       proximaEquipe();
@@ -285,7 +312,7 @@
       equipeIndex = 1 - equipeIndex;
     }
 
-    // Inicialização
+    // inicializa
     mostrarPergunta();
   </script>
 </body>
