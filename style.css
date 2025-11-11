@@ -307,7 +307,6 @@ h1 {
 .vf-true {
   display: inline-block;
   background: linear-gradient(90deg,#34d399 0%, #10b981 100%);
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 6px 18px rgba(16,185,129,0.12));
 }
@@ -324,7 +323,6 @@ h1 {
 .vf-false {
   display: inline-block;
   background: linear-gradient(90deg,#ff7fb3 0%, #ef5897 100%);
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 6px 18px rgba(239,88,151,0.12));
 }
