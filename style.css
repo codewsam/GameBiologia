@@ -1,14 +1,66 @@
 /* ====== Estilos gerais ====== */
 body {
-  background: linear-gradient(135deg, #f5b7d1 0%, #f8c8dc 100%);
+  background-image: url(img/image\(6\).png) ;
   min-height: 100vh;
   margin: 0;
+  background-size: cover;
+  zoom: 40px;
   font-family: 'Segoe UI', Arial, sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
 }
+
+
+/* ====== Banner estilo Canva ====== */
+.banner-container {
+  text-align: center;
+}
+
+.banner {
+  display: inline-block;
+  position: relative;
+}
+
+.banner-title {
+  background-color: #ef5a98;
+  color: #fff;
+  font-weight: 900;
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  padding: 15px 50px;
+  border-radius: 10px;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  margin-bottom: 12px;
+}
+
+.banner-subtitle {
+  background-color: #ef5a98;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  padding: 10px 35px;
+  border-radius: 10px;
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%);
+  display: inline-block;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ====== Responsivo ====== */
+@media (max-width: 576px) {
+  .banner-title {
+    font-size: 1.6rem;
+    padding: 10px 25px;
+  }
+  .banner-subtitle {
+    font-size: 1.1rem;
+    padding: 8px 20px;
+  }
+}
+
 
 h1 {
   background-color: white;
@@ -239,4 +291,53 @@ h1 {
   font-size: 1.15rem;
   margin: 8px 0;
   font-weight: bold;
+}
+
+/* título VERDADEIRO / OU / FALSO (quebrado em linhas, cores distintas) */
+.title-vf {
+  font-weight: 900;
+  line-height: 0.9;
+  font-size: 3.2rem;
+  margin: 0;
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.vf-true {
+  display: inline-block;
+  background: linear-gradient(90deg,#34d399 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 18px rgba(16,185,129,0.12));
+}
+
+.vf-or {
+  display: inline-block;
+  color: #6b7280;
+  font-size: 0.9em;
+  letter-spacing: 4px;
+  margin: 6px 0;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.vf-false {
+  display: inline-block;
+  background: linear-gradient(90deg,#ff7fb3 0%, #ef5897 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 18px rgba(239,88,151,0.12));
+}
+
+.subtitle {
+  font-size: 1.15rem;
+  color: #6b7280;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* responsivo */
+@media (max-width: 576px) {
+  .title-vf { font-size: 2rem; line-height: 0.95; }
+  .vf-or { letter-spacing: 3px; }
 }

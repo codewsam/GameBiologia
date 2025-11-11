@@ -20,14 +20,14 @@
 
     <div class="pergunta-container" id="perguntaContainer">
       <h2 id="perguntaTexto">Carregando...</h2>
-      <p>Peso: <span id="pesoPergunta">-</span></p>
+  
 
       <div class="botoes">
         <button type="button" id="btnVerdadeiro" class="btn-resposta">Verdadeiro</button>
         <button type="button" id="btnFalso" class="btn-resposta">Falso</button>
       </div>
 
-      <div id="feedback" class="feedback" style="display:none;">
+      <div id="feedback" class="feedback text-center" style="display:none;">
         <p id="resultadoResposta"></p>
       </div>
 
@@ -68,13 +68,20 @@
       </div>
     </div>
 
-    <div id="placarFinal" style="display:none; margin-top:25px;">
-      <h3>Placar Final</h3>
-      <ul id="listaFinal"></ul>
-      <button id="reiniciar" class="btn-continuar">Reiniciar jogo</button>
+    <div id="placarFinal" class="card text-center" style="display:none; margin-top:25px; padding:22px; border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,0.06);">
+      <div class="card-body">
+        <h2 id="tituloFinal" style="margin-bottom:6px; color:#ef5897">Resultado Final</h2>
+        <p id="subTituloFinal" class="small text-muted" style="margin-bottom:12px;">Veja o placar e reinicie para jogar novamente</p>
+        <div id="placarResumo" style="margin-bottom:12px;"></div>
+        <ul id="listaFinal" style="list-style:none; padding:0; margin:0 0 18px 0;"></ul>
+        <div class="d-flex justify-content-center gap-3">
+          <button id="reiniciar" class="btn-continuar btn-lg">Reiniciar</button>
+          <a href="equipes.html" id="botaoEditarEquipes" class="btn btn-outline-pink btn-lg">Editar equipes</a>
+        </div>
+      </div>
     </div>
   </div>
-
+  
   <script>
     // Pontuação: base 1 ponto imediato para resposta correta.
     // Se justificar corretamente, ganha os pontos extras (peso - 1).
@@ -106,28 +113,28 @@
 
     const perguntas = [
       // Peso 3 (par 1)
-      { texto: "O vírus HIV é transmitido somente através de relações sexuais desprotegidas.", resposta: false, peso: 3 },
-      { texto: "O HPV infecta apenas a pele da região genital.", resposta: false, peso: 3 },
+      { texto: "O vírus HIV é transmitido somente através de relações sexuais desprotegidas (peso 3)", resposta: false, peso: 3 },
+      { texto: "O HPV infecta apenas a pele da região genital (peso 3)", resposta: false, peso: 3 },
 
       // Peso 4 (par 1)
-      { texto: "As ISTs que causam úlceras ou inflamação genital podem facilitar a transmissão e a aquisição do HIV.", resposta: true, peso: 4 },
-      { texto: "A sífilis não tratada pode evoluir para a Neurossífilis, afetando o sistema nervoso e causando danos cerebrais ou na medula espinhal.", resposta: true, peso: 4 },
+      { texto: "As ISTs que causam úlceras ou inflamação genital podem facilitar a transmissão e a aquisição do HIV (peso 4)", resposta: true, peso: 4 },
+      { texto: "A sífilis não tratada pode evoluir para a Neurossífilis, afetando o sistema nervoso e causando danos cerebrais ou na medula espinhal (peso 4)", resposta: true, peso: 4 },
 
       // Peso 5 (par 1)
-      { texto: "O uso consistente de preservativos elimina completamente o risco de contrair qualquer IST.", resposta: false, peso: 5 },
+      { texto: "O uso consistente de preservativos elimina completamente o risco de contrair qualquer IST (peso 5)", resposta: false, peso: 5 },
       { texto: "O consentimento é um acordo 'sim ou não' que é dado no início da relação sexual e vale para todo o ato, não podendo ser retirado depois de iniciado (peso 5)", resposta: false, peso: 5 },
 
       // Peso 3 (par 2)
-      { texto: "O cancro mole e a sífilis primária são facilmente diferenciados porque o cancro da sífilis (duro) é indolor, e o cancro mole é doloroso.", resposta: true, peso: 3 },
-      { texto: "O uso de lubrificantes à base de óleo, como vaselina ou óleos corporais, é recomendado em conjunto com preservativos de látex para evitar o atrito e o rompimento.", resposta: false, peso: 3 },
+      { texto: "O cancro mole e a sífilis primária são facilmente diferenciados porque o cancro da sífilis (duro) é indolor, e o cancro mole é doloroso (peso 3)", resposta: true, peso: 3 },
+      { texto: "O uso de lubrificantes à base de óleo, como vaselina ou óleos corporais, é recomendado em conjunto com preservativos de látex para evitar o atrito e o rompimento (peso 3)", resposta: false, peso: 3 },
 
       // Peso 4 (par 2)
-      { texto: "A clamídia é frequentemente assintomática, especialmente em mulheres, sendo essa a principal razão para a sua rápida disseminação e a progressão para complicações.", resposta: true, peso: 4 },
-      { texto: "É comum que a Gonorreia e a Clamídia ocorram como coinfecção, exigindo tratamento para ambas as bactérias simultaneamente.", resposta: true, peso: 4 },
+      { texto: "A clamídia é frequentemente assintomática, especialmente em mulheres, sendo essa a principal razão para a sua rápida disseminação e a progressão para complicações (peso 4)", resposta: true, peso: 4 },
+      { texto: "É comum que a Gonorreia e a Clamídia ocorram como coinfecção, exigindo tratamento para ambas as bactérias simultaneamente (peso 4)", resposta: true, peso: 4 },
 
       // Peso 5 (par 2)
-      { texto: "Uma pessoa com HIV que está em tratamento antirretroviral e tem a carga viral indetectável ainda pode transmitir o vírus sexualmente.", resposta: false, peso: 5 },
-      { texto: "A vacinação contra o HPV deve ser realizada após o início da atividade sexual para garantir que o organismo possa criar anticorpos contra o vírus.", resposta: false, peso: 5 }
+      { texto: "Uma pessoa com HIV que está em tratamento antirretroviral e tem a carga viral indetectável ainda pode transmitir o vírus sexualmente (peso 5)", resposta: false, peso: 5 },
+      { texto: "A vacinação contra o HPV deve ser realizada após o início da atividade sexual para garantir que o organismo possa criar anticorpos contra o vírus (peso 5)", resposta: false, peso: 5 }
     ];
 
     const nomeEquipeAtualEl = document.getElementById("nomeEquipeAtual");
@@ -168,7 +175,7 @@
       basePointGiven = false;
       basePointOwner = null;
       desafioChallenger = null;
-
+  
       atualizarEquipeAtualDOM();
       atualizarPlacarDOM();
       feedbackEl.style.display = "none";
@@ -178,20 +185,14 @@
       proximaBtn.style.display = "none";
       btnVerdadeiro.disabled = false;
       btnFalso.disabled = false;
+  
+  if (indicePergunta >= perguntas.length) {
+  // Fim do jogo → salva pontuação e redireciona para tela final
+  salvarEquipes();
+  window.location.href = "resultado.html";
+  return;
+}
 
-      if (indicePergunta >= perguntas.length) {
-        perguntaTextoEl.textContent = "Fim do jogo!";
-        pesoPerguntaEl.textContent = "-";
-        document.querySelector(".botoes").style.display = "none";
-        placarFinal.style.display = "block";
-        listaFinal.innerHTML = "";
-        equipes.forEach(e => {
-          const li = document.createElement("li");
-          li.textContent = `${e.nome}: ${e.pontos} pontos`;
-          listaFinal.appendChild(li);
-        });
-        return;
-      }
       perguntaTextoEl.textContent = perguntas[indicePergunta].texto;
       pesoPerguntaEl.textContent = perguntas[indicePergunta].peso;
       document.querySelector(".botoes").style.display = "block";

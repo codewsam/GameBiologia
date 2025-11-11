@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultado Final</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>🏆 Resultado Final</h1>
+
+  <div id="placarFinal">
+    <h3>Placar das Equipes</h3>
+    <ul id="listaFinal"></ul>
+
+    <p id="mensagemFinal" class="subtitle" style="margin-top:20px;"></p>
+
+    <div class="mt-4">
+      <button class="btn-start" onclick="window.location.href='index.html'">Voltar ao Início</button>
+    </div>
+  </div>
+
+  <script>
+    const equipes = JSON.parse(localStorage.getItem('equipes')) || [];
+    const lista = document.getElementById('listaFinal');
+    const mensagem = document.getElementById('mensagemFinal');
+
+    if (equipes.length < 2) {
+      lista.innerHTML = "<li>Nenhum jogo encontrado.</li>";
+      mensagem.textContent = "";
+    } else {
+      const ordem = [...equipes].sort((a, b) => b.pontos - a.pontos);
+      const empate = ordem[0].pontos === ordem[1].pontos;
+
+      // Mensagem final
+      if (empate) {
+        mensagem.innerHTML = `🤝 Empate! Ambas as equipes marcaram <b>${ordem[0].pontos}</b> pontos!`;
+      } else {
+        mensagem.innerHTML = `🎉 <b>${ordem[0].nome}</b> venceu com <b>${ordem[0].pontos}</b> pontos!`;
+      }
+
+      // Lista do placar final
+      lista.innerHTML = "";
+      ordem.forEach((e, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `${i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"} ${e.nome} — ${e.pontos} ponto${e.pontos !== 1 ? 's' : ''}`;
+        lista.appendChild(li);
+      });
+    }
+  </script>
+
+</body>
+</html>
